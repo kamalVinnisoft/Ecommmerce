@@ -1,0 +1,156 @@
+
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}EShopper - Bootstrap Shop Template{% endblock %}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Free HTML Templates" name="keywords">
+    <meta content="Free HTML Templates" name="description">
+
+    <!-- Favicon -->
+    <link href="{% static 'img/favicon.ico' %}" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet"> 
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .signup-form {
+            max-width: 550px; /* Adjust the width as needed */
+            margin: 0 auto;   /* Center the form horizontally */
+            padding: 20px;    /* Add some padding */
+            background-color: #f9f9f9; /* Optional: Background color for better visibility */
+            border-radius: 8px; /* Optional: Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
+        }
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px; /* Adjust the width as needed */
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+        
+        .alert {
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-icon {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .alert-message {
+            flex-grow: 1;
+            font-size: 1rem;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+            color: #856404;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        
+        .alert:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+   
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-3 d-none d-lg-block">
+                <a href="" class="text-decoration-none">
+                    <h1 class="m-0 display-5 font-weight-semi-bold"><span class="text-primary font-weight-bold border px-3 mr-1">E</span>Shopper</h1>
+                </a>
+            </div>
+            {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    <span class="alert-icon">
+                        {% if message.tags == "success" %}
+                            ✔️
+                        {% elif message.tags == "error" %}
+                            ❌
+                        {% elif message.tags == "warning" %}
+                            ⚠️
+                        {% elif message.tags == "info" %}
+                            ℹ️
+                        {% endif %}
+                    </span>
+                    <span class="alert-message">{{ message }}</span>
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        </div>
+        <div class="signup-form">
+            <h2 class="text-center">Create an Account</h2>
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                </div>
+               
+                <div class="form-group">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+            </form>
+            <hr>
+            <div class="text-center">
+                <p>Create Account? <a href="{% url 'signup' %}">Log in</a></p>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Hide alerts after 5 seconds
+        window.onload = function() {
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 500); // Remove from DOM after fading out
+                });
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
