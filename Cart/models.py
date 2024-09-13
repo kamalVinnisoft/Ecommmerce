@@ -10,3 +10,4 @@ class Cart(BaseModel):
     user =models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    remove = models.BooleanField(default=False)

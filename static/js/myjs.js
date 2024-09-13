@@ -1,8 +1,33 @@
+function displayMessages(message) {
+    console.log("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+    const alertContainer = document.querySelector('.alert-container');
+    console.log(alertContainer);
+
+    // Clear previous messages
+    alertContainer.innerHTML = '';
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${message.tags}`;
+
+    const alertIcon = document.createElement('span');
+    alertIcon.className = 'alert-icon';
+
+
+    const alertMessage = document.createElement('span');
+    alertMessage.className = 'alert-message';
+    alertMessage.textContent = message; // Assuming `message` has a `text` property for the message content
+
+    alertDiv.appendChild(alertIcon);
+    alertDiv.appendChild(alertMessage);
+
+    alertContainer.appendChild(alertDiv);
+   
+}
+
+
 function AddToCart(csrf_token,isAuth,productId, productName, price, MainImageUrl, quantity = 1) {
     // Get the existing cart data from local storage
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>",csrf_token,isAuth)
     if (isAuth == 'True'){
-        console.log("llllllllllllllllllllllllllllllllllllllllllllllllllllllll")
         $.ajax({
             url: '/cart/addtocart/',  // URL to the Django view
             type: 'POST',   // HTTP method
@@ -10,12 +35,12 @@ function AddToCart(csrf_token,isAuth,productId, productName, price, MainImageUrl
             
             data:{
                 'ProductId':productId,
+                'quantity':quantity,
                 'csrfmiddlewaretoken':  csrf_token ,
             },
             success: function(response) {
-                console.log("KKKKKKKKKKKKKKKKKKKKKKKK",response)
-                
-                $('#response').text(response.message);  // Handle success
+                document.querySelector('.badge').textContent = response.cart_count;
+                displayMessages(response.message);
             },
             error: function(xhr, status, error) {
                 $('#response').text('An error occurred');  // Handle error
@@ -24,14 +49,12 @@ function AddToCart(csrf_token,isAuth,productId, productName, price, MainImageUrl
     }else{
         
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        console.log("Adding to cart:", productId, productName, price, MainImageUrl, quantity);
-
+        document.querySelector('.badge').textContent = cart.reduce((total, item) => total + item.quantity, 0)
         // Check if the product is already in the cart
         let item = cart.find(item => item.productId === productId);
         if (item) {
             // If the product is already in the cart, update the quantity
             item.quantity += parseInt(quantity);
-            console.log("Updated quantity:", item.quantity);
         } else {
             // If the product is not in the cart, add it
             cart.push({ productId, productName, price, MainImageUrl, quantity: parseInt(quantity) });
@@ -41,14 +64,13 @@ function AddToCart(csrf_token,isAuth,productId, productName, price, MainImageUrl
         localStorage.setItem('cart', JSON.stringify(cart));
 
         // Update the total number of products in the cart
-        
+        displayMessages(`${productName} is added to your cart successfully`);
         updateCartTotal();
     }
 }
 
 function remove_from_cart(csrf_token,isAuth,productId) {
-    console.log(csrf_token,isAuth)
-    if (isAuth){
+    if (isAuth == 'True'){
         $.ajax({
             url: '/cart/removefromcart/',  // URL to the Django view
             type: 'POST',   // HTTP method
@@ -59,23 +81,39 @@ function remove_from_cart(csrf_token,isAuth,productId) {
                 'csrfmiddlewaretoken':  csrf_token ,
             },
             success: function(response) {
-                console.log("KKKKKKKKKKKKKKKKKKKKKKKK",response)
-                $('#response').text(response.message);  // Handle success
+                displayMessages(response.message);
+                // Parse the total_cost as an integer
+                let total_cost = parseInt(response.total_cost, 10);
+                document.querySelector('.badge').textContent = response.cart_count;
+                // Update the cart's subtotal and total cost with shipping
+                document.getElementById('cart-subtotal').innerText = total_cost;
+                
+                if (total_cost > 0) {
+                    // Assuming $10 shipping fee, update the cart total
+                    document.getElementById('cart-total').innerText = total_cost + 10;
+                } else {
+                    document.getElementById('cart-total').innerText = '$0';  // Set total to $0 if no items
+                }
+                const row = document.getElementById('cart-item-' + productId);
+                if (row) {
+                    row.remove();
+                }
             },
             error: function(xhr, status, error) {
                 $('#response').text('An error occurred');  // Handle error
             }
         });
     }else{
-
-        console.log("Attempting to remove product:", productId);
-
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         cart = cart.filter(item => item.productId !== productId);
         localStorage.setItem('cart', JSON.stringify(cart));
         updateCartUI();
+        displayMessages(`${item.productName} is removed from your cart successfully`);
+        document.querySelector('.badge').textContent = cart.reduce((total, item) => total + item.quantity, 0)
+
     }
 }
+
 
 function updateCartTotal() {
     // Get the cart from local storage
@@ -142,8 +180,6 @@ function updateCartUI() {
 
 
 function inc_product_to_cart(csrf_token,isAuth,productId) {
-    console.log("User authenticated:", isAuth);
-    console.log("Attempting to increment product:", productId);
     if (isAuth == 'True'){
         $.ajax({
             url: '/cart/addtocart/',  // URL to the Django view
@@ -155,21 +191,34 @@ function inc_product_to_cart(csrf_token,isAuth,productId) {
                 'csrfmiddlewaretoken':  csrf_token ,
             },
             success: function(response) {
-                $('#response').text(response.message);  // Handle success
+                displayMessages(response.message);
+                var quantityInput = document.getElementById('quantity-' + productId);
+                quantityInput.value= parseInt(quantityInput.value) + 1;
+                document.querySelector('.badge').textContent = response.cart_count;
+                // Parse the total_cost as an integer
+                let total_cost = parseInt(response.total_cost, 10);
+                
+                // Update the cart's subtotal and total cost with shipping
+                document.getElementById('cart-subtotal').innerText = total_cost;
+                
+                if (total_cost > 0) {
+                    // Assuming $10 shipping fee, update the cart total
+                    document.getElementById('cart-total').innerText = total_cost + 10;
+                } else {
+                    document.getElementById('cart-total').innerText = '$0';  // Set total to $0 if no items
+                }
             },
-            error: function(xhr, status, error) {
-                $('#response').text('An error occurred');  // Handle error
-            }
         });
     }else{
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let item = cart.find(item => item.productId === productId);
-    
+        document.querySelector('.badge').textContent = cart.reduce((total, item) => total + item.quantity, 0)
         if (item) {
             item.quantity += 1;
             localStorage.setItem('cart', JSON.stringify(cart));
         }
         updateCartUI();
+        displayMessages(`${item.productName} is added to your cart successfully`);
     }
 }
 
@@ -187,19 +236,31 @@ function dec_product_to_cart(csrf_token,isAuth,productId) {
                 'csrfmiddlewaretoken':  csrf_token ,
             },
             success: function(response) {
-                console.log("KKKKKKKKKKKKKKKKKKKKKKKK",response)
-                $('#response').text(response.message);  // Handle success
+                displayMessages(response.message);
+                var quantityInput = document.getElementById('quantity-' + productId);
+                quantityInput.value= parseInt(quantityInput.value) - 1;
+                // Parse the total_cost as an integer
+                let total_cost = parseInt(response.total_cost, 10);
+                
+                // Update the cart's subtotal and total cost with shipping
+                document.getElementById('cart-subtotal').innerText = total_cost;
+                document.querySelector('.badge').textContent = response.cart_count;
+                if (total_cost > 0) {
+                    // Assuming $10 shipping fee, update the cart total
+                    document.getElementById('cart-total').innerText = total_cost + 10;
+                } else {
+                    document.getElementById('cart-total').innerText = '$0';  // Set total to $0 if no items
+                }
             },
             error: function(xhr, status, error) {
                 $('#response').text('An error occurred');  // Handle error
             }
         });
     }else{
-        console.log("Attempting to decrement product:", productId);
 
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let item = cart.find(item => item.productId === productId);
-
+        document.querySelector('.badge').textContent = cart.reduce((total, item) => total + item.quantity, 0)
         if (item) {
             item.quantity -= 1;
             if (item.quantity <= 0) {
@@ -207,6 +268,34 @@ function dec_product_to_cart(csrf_token,isAuth,productId) {
             }
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartUI();
+            displayMessages(`${item.productName} is removed from your cart successfully`);
         }
     }
+}
+
+function CartUpdate(isAuthenticated,csrf_token){
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let productsList = cart.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+    }));
+    if (cart.length > 0 && isAuthenticated) {
+        $.ajax({
+            url: '/cart/updateCart/',  // URL to the Django view
+            type: 'POST',              // HTTP method
+            dataType: 'json',          // Expected data type from server
+            data: {
+                'cart': productsList,
+                'csrfmiddlewaretoken': csrf_token,  // Ensure csrf_token is defined
+            },
+            success: function(response) {
+                localStorage.removeItem('cart');
+                document.querySelector('.badge').textContent = response.cart_count;
+            },
+            error: function(xhr, status, error) {
+                $('#response').text('An error occurred while updating the cart.');
+            }
+        });
+    }
+    
 }

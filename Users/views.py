@@ -4,7 +4,7 @@ from .models import CustomUser
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from utility.views import render_with_messages
-
+from django.contrib.auth import logout
 
 class SignUp(View):
     def get(self,request):
@@ -61,3 +61,7 @@ class Login(View):
             return redirect('/')  # Redirect to a home page or any other page
         else:
            return render_with_messages(request, 'login.html', error_message= "Invalid email or password")
+       
+def Logout(request):
+    logout(request)  # Logs out the user
+    return redirect('login')

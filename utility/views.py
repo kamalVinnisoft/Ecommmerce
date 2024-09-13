@@ -6,5 +6,6 @@ def render_with_messages(request, template_name, context=None, success_message=N
         messages.success(request, success_message)
     if error_message:
         messages.error(request, error_message)
-    
+        print(error_message,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",success_message,error_message)
     return render(request, template_name, context or {})

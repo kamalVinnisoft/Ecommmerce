@@ -103,17 +103,7 @@
             <div class="alert-container">
                 {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">
-                    <span class="alert-icon">
-                        {% if message.tags == "success" %}
-                            ✔️
-                        {% elif message.tags == "error" %}
-                            ❌
-                        {% elif message.tags == "warning" %}
-                            ⚠️
-                        {% elif message.tags == "info" %}
-                            ℹ️
-                        {% endif %}
-                    </span>
+                    
                     <span class="alert-message">{{ message }}</span>
                 </div>
             {% endfor %}
